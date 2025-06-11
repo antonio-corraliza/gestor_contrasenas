@@ -10,7 +10,7 @@ class Gestor:
         self.master.title("Gestor contraseñas")
         self.master.geometry("300x400")
         self.widgets()
-        
+        self.cargar_listbox()
 
     def widgets(self):
         self.espacio = tk.Frame(self.master, height=30, width=30)
@@ -51,22 +51,29 @@ class Gestor:
         except Exception as e:
             messagebox.showerror("Error", f"Algo no salio bien {e}")
         self.conn.close()
-        self.borrar_cajon()
         self.lista_sitios.insert(tk.END, self.sitio_web.get())
+        self.sitio_web.delete(0, tk.END)
+        self.usuario.delete(0, tk.END)
+        self.contrasena.delete(0, tk.END)
+
 
     def consultar(self):
         self.conexion()
         sql_select_all = "SELECT * FROM contraseñas"
         self.cursor.execute(sql_select_all)
         registros = self.cursor.fetchall()
-        messagebox.showinfo("Informacion", f"Web:{registros[0]}\nUsuario:{registros[1]}\nContraseña:{registros[2]}")
+        for datos in registros:
+            messagebox.showinfo("Informacion", f"Web: {datos[1]}\nUsuario: {datos[2]}\nContraseña: {datos[3]}")
         self.conn.close()
 
     def eliminar(self):
+        seleccion = self.lista_sitios.curselection() # Obtiene los índices de las filas seleccionadas
+        indice_listbox = seleccion[0]
         self.conexion()
-        sql_delete_condicional = "DELETE FROM contraseñas WHERE usuario = ?"
+        sql_delete_condicional = "DELETE FROM contraseñas WHERE id = ?"
         try:
-            self.cursor.execute(sql_delete_condicional, (self.lista_sitios.delete(tk.ACTIVE),))
+            self.cursor.execute(sql_delete_condicional, (indice_listbox,))
+            registros = self.cursor.fetchall()
             self.conn.commit()
         except Exception as e:
             messagebox.showerror("Error", f"Algo fallo {e}")
@@ -92,10 +99,19 @@ class Gestor:
         contrasena_ale = "".join(random.sample(lista_caracteres, 10))
         self.contrasena.insert(tk.END, contrasena_ale)
 
-    def borrar_cajon(self):
-        self.sitio_web.delete(0, tk.END)
-        self.usuario.delete(0, tk.END)
-        self.contrasena.delete(0, tk.END)
+    def cargar_listbox(self):
+        self.conexion()
+        try:
+            # Ejecutar la consulta para obtener todos los nombres de la tabla usuarios
+            self.cursor.execute("SELECT web FROM contraseñas")
+            # Recuperar todas las filas
+            filas = self.cursor.fetchall()
+            # Insertar cada nombre en el Listbox
+            for i, fila in enumerate(filas):
+                self.lista_sitios.insert(tk.END, fila[0]) # fila[0] porque cada fila es una tupla (nombre,)
+        except Exception as e:
+            messagebox.showerror("Error", f"Algo fallo:{e}")
+        self.conn.close() 
 
 
 
