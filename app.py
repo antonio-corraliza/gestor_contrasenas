@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox, simpledialog
 import random
+import os
 import sqlite3
 
 class Gestor:
@@ -47,10 +48,14 @@ class Gestor:
 
     def conexion(self):
         """
-        Establece la conexión con la base de datos SQLite y crea el cursor.
+        Establece la conexión con la base de datos SQLite en una carpeta interna del sistema y crea el cursor.
         """
-        self.conn = sqlite3.connect("gestor_contraseñas.db")
-        self.cursor = self.conn.cursor()
+        appdata = os.getenv("APPDATA")  # 1
+        db_folder = os.path.join(appdata, "GestorContrasenas")  # 2
+        os.makedirs(db_folder, exist_ok=True)  # 3
+        db_path = os.path.join(db_folder, "gestor_contraseñas.db")  # 4
+        self.conn = sqlite3.connect(db_path)  # 5
+        self.cursor = self.conn.cursor()  # 6
 
     def agregar(self):
         """
