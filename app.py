@@ -8,7 +8,7 @@ class Gestor:
     def __init__(self, master):
         self.master = master
         self.master.title("Gestor contraseñas")
-        self.master.geometry("300x400")
+        self.master.geometry("700x900")
         self.tablas()
         self.contra_maestra()
         self.widgets()
@@ -50,12 +50,16 @@ class Gestor:
         """
         Establece la conexión con la base de datos SQLite en una carpeta interna del sistema y crea el cursor.
         """
-        appdata = os.getenv("APPDATA")  # 1
-        db_folder = os.path.join(appdata, "GestorContrasenas")  # 2
-        os.makedirs(db_folder, exist_ok=True)  # 3
-        db_path = os.path.join(db_folder, "gestor_contraseñas.db")  # 4
-        self.conn = sqlite3.connect(db_path)  # 5
-        self.cursor = self.conn.cursor()  # 6
+        if os.name == "nt":
+            data_folder = os.getenv("APPDATA")
+        else:
+            data_folder = os.getenv("XDG_DATA_HOME", os.path.expanduser("~/.local/share"))
+
+        db_folder = os.path.join(data_folder, "GestorContrasenas")
+        os.makedirs(db_folder, exist_ok=True)
+        db_path = os.path.join(db_folder, "gestor_contraseñas.db")
+        self.conn = sqlite3.connect(db_path)
+        self.cursor = self.conn.cursor()
 
     def agregar(self):
         """
